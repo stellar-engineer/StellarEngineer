@@ -1,7 +1,5 @@
 # Stellar Engineer
 Your first stop for everything related to modding [The Pegasus Expedition](https://www.thepegasusexpedition.com/)!
-This is a library that focuses on 
-
 
 ## Using Stellar Engineer
 At the moment no public release of Stellar Engineer. In the mean time, read a bit about C# programming and [Harmony](https://github.com/pardeike/Harmony).
