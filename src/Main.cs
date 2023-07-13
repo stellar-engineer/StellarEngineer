@@ -5,12 +5,9 @@ using StellarEngineer;
 using UnityEngine;
 
 
-namespace Doorstop
-{
-    class Entrypoint
-    {
-        public static void Start()
-        {
+namespace Doorstop {
+    class Entrypoint {
+        public static void Start() {
             // NOTE: Possible race condition here, if file log enables after the regular logger, then queued messages
             // will not be put into the file log. This issue will happen just for Stellar Engineer, as only it should enable
             // the file log. 
@@ -29,12 +26,9 @@ namespace Doorstop
 }
 
 [HarmonyPatch(typeof(GlobalC), "Update")]
-class Patch01
-{
-    static void Prefix()
-    {
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
+class Patch01 {
+    static void Prefix() {
+        if (Input.GetKeyDown(KeyCode.Q)) {
             StellarLogger.Log("q key was pressed");
         }
     }
