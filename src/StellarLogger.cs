@@ -11,14 +11,34 @@ namespace StellarEngineer {
     /// Stellar Engineer Logger. This puts all of your messages into the Unity Debug Console and into the "stellar.engineer.log" file located
     /// next to the executable.
     /// </summary>
-    public static class StellarLogger {
+    public class StellarLogger {
+// ============================================= // 
+// =                 Instanced                 = // 
+// ============================================= // 
+        public readonly string id;
+
+        public StellarLogger(string id) {
+            this.id = id;
+        }
+
+        public void Log(object message) {
+            Log(this.id, message);
+        }
+
+// ========================================== // 
+// =                 Static                 = // 
+// ========================================== // 
+
+        // This is our instance of the logger.
+        internal static StellarLogger logger = new StellarLogger("stellar.engineer");
+
         private static readonly List<string> messagesBacklog = new List<string>();
         private static Harmony harmony = null;
         private static bool unityEnabled = false;
         private static StreamWriter logStream = null;
         private static bool enabled = false;
 
-        public static void Log(object message) {
+        internal static void Log(string id, object message) {
             if (!enabled) {
                 return;
             }
@@ -26,7 +46,7 @@ namespace StellarEngineer {
             // We need to wait for unity to finish initializing before we can start logging using Debug.Log().
             // Unti then, store all messages into a temporary list.
             if (!unityEnabled) {
-                messagesBacklog.Add(FormatMessage(message));
+                messagesBacklog.Add(FormatMessage(id, message));
                 return;
             }
 
@@ -40,22 +60,23 @@ namespace StellarEngineer {
             //     messagesBacklog.Clear();
             // }
 
-            Debug.Log(FormatMessage(message));
+            Debug.Log(FormatMessage(id, message));
         }
 
-        private static string FormatMessage(object message) {
+        private static string FormatMessage(string id, object message) {
             if (harmony == null) {
-                return "! " + DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff") + " : " + message.ToString();
+                return "! " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + " : " + message.ToString();
             }
             else {
-                return "! " + DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff") + " [" + harmony.Id + "]: " + message.ToString();
+                return "! " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + " [" + id + "]: " + message.ToString();
             }
         }
 
         /// <summary>
-        /// Enable the logger for your mod. Unless you enable the logger, <see cref="StellarLogger.Log(object)"/> won't function.
+        /// Enable the logger. This is game-wide, because as we load the assemblies, the "static" information here is shared with the loaded assemblies.
+        /// As such, we truly need to enable once.
         /// </summary>
-        /// <param name="id">An ID for your logger. Should be different from the id of your main Harmony instance.</param>
+        /// <param name="id">An ID for the logger. Can be the same as main, though further testing is needed.</param>
         // TODO: should we still create a new harmony instance? Kinda only needed by us.
         public static void Enable(string id) {
             StellarLogger.enabled = true;

@@ -1,9 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using StellarEngineer;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 
 namespace Doorstop {
     class Entrypoint {
@@ -14,13 +16,36 @@ namespace Doorstop {
             StellarLogger.EnableFileLog();
             StellarLogger.Enable("stellar.engineer.logger");
 
-            StellarLogger.Log("Doorstop loaded succesfully!");
+            StellarLogger.logger.Log("Doorstop loaded succesfully!");
 
             var harmony = new Harmony("stellar.engineer");
-            StellarLogger.Log("Harmony Loaded.");
+            StellarLogger.logger.Log("Harmony Loaded.");
             
             harmony.PatchAll(Assembly.GetExecutingAssembly());
-            StellarLogger.Log("Finished automatic patching.");
+            StellarLogger.logger.Log("Finished automatic patching.");
+
+            SceneManager.sceneLoaded += Load;
+        }
+
+        public static void Load(Scene _arg0, LoadSceneMode _arg2) {
+            SceneManager.sceneLoaded -= Load;
+
+            Assembly assembly = Assembly.LoadFrom("./mods/HelloWorld/src/bin/Release/net4.5/HelloWorld.dll");
+            foreach (var type in assembly.GetTypes()) {
+                foreach (var method in type.GetRuntimeMethods()) {
+                    if (!method.IsStatic) continue;
+                    if (method.ReturnType != typeof(void)) continue;
+                    if (method.GetParameters().Length != 0) continue;
+
+
+                    var attribute = method.GetCustomAttribute<EntrypointAttribute>();
+
+                    if (attribute != null) {
+                        method.Invoke(null,null);
+                        return;
+                    }
+                }
+            }
         }
     }
 }
@@ -29,7 +54,7 @@ namespace Doorstop {
 class Patch01 {
     static void Prefix() {
         if (Input.GetKeyDown(KeyCode.Q)) {
-            StellarLogger.Log("q key was pressed");
+            StellarLogger.logger.Log("q key was pressed");
         }
     }
 }
