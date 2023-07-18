@@ -21,8 +21,33 @@ namespace StellarEngineer {
             this.id = id;
         }
 
-        public void Log(object message) {
-            Log(this.id, message);
+        public void LogDebug(object message) {
+            Log(new LogMessage() {
+                logLevel = LogLevel.Debug,
+                id = this.id,
+                message = message
+            });
+        }
+        public void LogInfo(object message) {
+            Log(new LogMessage() {
+                logLevel = LogLevel.Info,
+                id = this.id,
+                message = message
+            });
+        }
+        public void LogWarning(object message) {
+            Log(new LogMessage() {
+                logLevel = LogLevel.Warning,
+                id = this.id,
+                message = message
+            });
+        }
+        public void LogError(object message) {
+            Log(new LogMessage() {
+                logLevel = LogLevel.Error,
+                id = this.id,
+                message = message
+            });
         }
 
 // ========================================== // 
@@ -31,22 +56,27 @@ namespace StellarEngineer {
 
         // This is our instance of the logger.
         internal static StellarLogger logger = new StellarLogger("stellar.engineer");
+        internal static LogLevel defaultLogLevel = LogLevel.Debug;
 
-        private static readonly List<string> messagesBacklog = new List<string>();
-        private static Harmony harmony = null;
+        private static readonly List<LogMessage> messagesBacklog = new List<LogMessage>();
         private static bool unityEnabled = false;
         private static StreamWriter logStream = null;
         private static bool enabled = false;
 
-        internal static void Log(string id, object message) {
+        internal static void Log(LogMessage logMessage) {
             if (!enabled) {
                 return;
             }
 
+            if (logMessage.logLevel < defaultLogLevel) {
+                return;
+            }
+
             // We need to wait for unity to finish initializing before we can start logging using Debug.Log().
-            // Unti then, store all messages into a temporary list.
+            // Untiy then, store all messages into a temporary list.
             if (!unityEnabled) {
-                messagesBacklog.Add(FormatMessage(id, message));
+                messagesBacklog.Add(logMessage);
+                LogToFile(FormatMessage(logMessage));
                 return;
             }
 
@@ -60,37 +90,58 @@ namespace StellarEngineer {
             //     messagesBacklog.Clear();
             // }
 
-            Debug.Log(FormatMessage(id, message));
+            LogUnity(logMessage.logLevel, FormatMessage(logMessage));
+            LogToFile(FormatMessage(logMessage));
         }
 
-        private static string FormatMessage(string id, object message) {
-            if (harmony == null) {
-                return "! " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + " : " + message.ToString();
-            }
-            else {
-                return "! " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + " [" + id + "]: " + message.ToString();
+        private static string FormatMessage(LogMessage logMessage) {
+            return $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} ({logMessage.id}) [{logMessage.logLevel}]: {logMessage.message}";
+        }
+
+        private static void LogUnity(LogLevel logLevel, string formattedMessage) {
+            switch (logLevel) {
+                case LogLevel.Debug:
+                case LogLevel.Info:
+                    Debug.Log(formattedMessage);
+                    break;
+                case LogLevel.Warning:
+                    Debug.LogWarning(formattedMessage);
+                    break;
+                case LogLevel.Error:
+                    Debug.LogError(formattedMessage);
+                    break;
+                default:
+                    Debug.LogError(new NotImplementedException().Message);
+                    LogToFile(new NotImplementedException().Message);
+                    break;
             }
         }
 
         /// <summary>
         /// Enable the logger. This is game-wide, because as we load the assemblies, the "static" information here is shared with the loaded assemblies.
-        /// As such, we truly need to enable once.
+        /// As such, we truly need to enable once. Only called internally by Stellar Engineer.
         /// </summary>
-        /// <param name="id">An ID for the logger. Can be the same as main, though further testing is needed.</param>
-        // TODO: should we still create a new harmony instance? Kinda only needed by us.
-        public static void Enable(string id) {
+        internal static void Enable() {
             StellarLogger.enabled = true;
-            StellarLogger.harmony = new Harmony(id);
-
             SceneManager.sceneLoaded += Bootstrap_Log;
         }
 
         /// <summary>
-        /// Enable logging to file. Only used internally by Stellar Engineer.
+        /// Enable logging to file. Only called internally by Stellar Engineer.
         /// </summary>
         internal static void EnableFileLog() {
             logStream = new StreamWriter("./stellar.engineer.log");
-            SceneManager.sceneLoaded += Bootstrap_EnableFileLog;
+            
+            logStream.WriteLine(DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff") + ": Logger initialized.");
+            logStream.WriteLine("For the full backtrace of every log call, see Unity's log: C:/Users/<YOUR_USER>/AppData/LocalLow/Kalla Gameworks/The Pegasus Expedition/Player.log\n");            
+            logStream.Flush();
+        }
+
+        private static void LogToFile(object message) {
+            if (StellarLogger.logStream != null) {
+                logStream.WriteLine(message.ToString());
+                logStream.Flush();
+            }           
         }
 
 // ==================================================== // 
@@ -104,38 +155,35 @@ namespace StellarEngineer {
 
 
                 if (messagesBacklog.Count > 0) {
-                    foreach (object msg in messagesBacklog) {
+                    foreach (var msg in messagesBacklog) {
                         if (msg != null) {
-                            Debug.Log(msg);
+                            LogUnity(msg.logLevel, FormatMessage(msg));
                         }
                     }
                     messagesBacklog.Clear();
                 }
             }
         }
-
-        private static void Bootstrap_EnableFileLog(Scene _arg0, LoadSceneMode _arg2) {
-            SceneManager.sceneLoaded -= Bootstrap_EnableFileLog;
-
-
-            var debugLogOriginal = AccessTools.Method(typeof(UnityEngine.Debug), nameof(Debug.Log), new Type[] { typeof(object)});
-            var logPrefix = SymbolExtensions.GetMethodInfo(() => Prefix_LogToFile("placeholder"));
-                
-            harmony.Patch(debugLogOriginal, new HarmonyMethod(logPrefix));
-
-            logStream.WriteLine(DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff") + ": Logger initialized.");
-            logStream.WriteLine("For the full backtrace of every log call, see Unity's log: C:/Users/<YOUR_USER>/AppData/LocalLow/Kalla Gameworks/The Pegasus Expedition/Player.log\n");            
-            logStream.Flush();
+        public enum LogLevel {
+            Debug   = 0,
+            Info    = 1,
+            Warning = 2,
+            Error   = 3,
         }
-        
+        public class LogMessage {
+            public LogLevel logLevel = LogLevel.Debug;
+            public string id = "unknown";
+            public object message = "no message";
 
-        private static void Prefix_LogToFile(object message) {
-            if (StellarLogger.logStream != null) {
-                if (message is string str && str[0] == '!') {
-                    logStream.WriteLine(str);
-                    logStream.Flush();
-                }
-            }           
+            public LogMessage()
+            {
+            }
+
+            public LogMessage(LogLevel logLevel, string id, object message) {
+                this.logLevel = logLevel;
+                this.id = id;
+                this.message = message;
+            }
         }
     }
 }

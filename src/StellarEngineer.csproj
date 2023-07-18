@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Lib.Harmony" Version="2.2.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="8.0.1" />
   </ItemGroup>
   
   <PropertyGroup>
