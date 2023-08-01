@@ -16,7 +16,7 @@ namespace Doorstop {
             StellarLogger.EnableFileLog();
             StellarLogger.Enable();
 
-            StellarLogger.logger.LogInfo("Doorstop loaded succesfully!");
+            StellarLogger.logger.LogInfo("Doorstop loaded succesfully! 1");
 
             var harmony = new Harmony("stellar.engineer");
             StellarLogger.logger.LogInfo("Harmony Loaded.");
@@ -24,7 +24,9 @@ namespace Doorstop {
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             StellarLogger.logger.LogInfo("Finished automatic patching.");
 
-            ModLoader.LoadDLL("./mods/HelloWorld/src/bin/Release/net4.5/HelloWorld.dll");
+            StellarLogger.logger.LogInfo("CALL");
+            ModLoader.LoadAllMods("./mods");
+            StellarLogger.logger.LogInfo("Finished loading all mods. Have fun!");
         }
     }
 }

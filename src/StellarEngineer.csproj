@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Lib.Harmony" Version="2.2.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="8.0.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   
   <PropertyGroup>
@@ -15,6 +15,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\game_dlls\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>..\game_dlls\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>

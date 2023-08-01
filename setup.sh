@@ -41,16 +41,23 @@ function install_doorstop() {
             echo "[ ] doorstop_config.ini up-to date"
         fi
 
-        if [[ ! -f "./src/bin/Release/StellarEngineer.dll" ]] || [[ "./src/bin/Release/StellarEngineer.dll" -nt "${game_dir}/The Pegasus Expedition_Data/Managed/StellarEngineer.dll" ]]; then
+        if [[ ! -f "./src/bin/Debug/StellarEngineer.dll" ]] || [[ "./src/bin/Debug/StellarEngineer.dll" -nt "${game_dir}/The Pegasus Expedition_Data/Managed/StellarEngineer.dll" ]]; then
             echo "[✓] Copied StellarEngineer.dll"
-            cp "./src/bin/Release/StellarEngineer.dll" "${game_dir}/The Pegasus Expedition_Data/Managed/StellarEngineer.dll"
+            cp "./src/bin/Debug/StellarEngineer.dll" "${game_dir}/The Pegasus Expedition_Data/Managed/StellarEngineer.dll"
         else
             echo "[ ] StellarEngineer.dll up-to date"
         fi
 
-        if [[ ! -f "./src/bin/Release/0Harmony.dll" ]] || [[ "./src/bin/Release/0Harmony.dll" -nt "${game_dir}/The Pegasus Expedition_Data/Managed/0Harmony.dll" ]]; then
+        if [[ ! -f "./src/bin/Debug/StellarEngineer.pdb" ]] || [[ "./src/bin/Debug/StellarEngineer.pdb" -nt "${game_dir}/The Pegasus Expedition_Data/Managed/StellarEngineer.pdb" ]]; then
+            echo "[✓] Copied StellarEngineer.pdb"
+            cp "./src/bin/Debug/StellarEngineer.pdb" "${game_dir}/The Pegasus Expedition_Data/Managed/StellarEngineer.pdb"
+        else
+            echo "[ ] StellarEngineer.pdb up-to date"
+        fi
+
+        if [[ ! -f "./src/bin/Debug/0Harmony.dll" ]] || [[ "./src/bin/Debug/0Harmony.dll" -nt "${game_dir}/The Pegasus Expedition_Data/Managed/0Harmony.dll" ]]; then
             echo "[✓] Copied 0Harmony.dll"
-            cp "./src/bin/Release/0Harmony.dll" "${game_dir}/The Pegasus Expedition_Data/Managed/0Harmony.dll"
+            cp "./src/bin/Debug/0Harmony.dll" "${game_dir}/The Pegasus Expedition_Data/Managed/0Harmony.dll"
         else
             echo "[ ] 0Harmony.dll up-to date"
         fi
@@ -61,7 +68,7 @@ function install_doorstop() {
 }
 
 function build() {
-    dotnet build ./src/StellarEngineer.sln -c Release
+    dotnet build ./src/StellarEngineer.sln -c Debug
 }
 
 load_path

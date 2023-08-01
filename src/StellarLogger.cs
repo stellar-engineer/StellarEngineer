@@ -56,7 +56,7 @@ namespace StellarEngineer {
 
         // This is our instance of the logger.
         internal static StellarLogger logger = new StellarLogger("stellar.engineer");
-        internal static LogLevel defaultLogLevel = LogLevel.Debug;
+        internal static LogLevel defaultLogLevel = LogLevel.Debug; // TODO: get this from a config file
 
         private static readonly List<LogMessage> messagesBacklog = new List<LogMessage>();
         private static bool unityEnabled = false;
@@ -69,7 +69,7 @@ namespace StellarEngineer {
             }
 
             if (logMessage.logLevel < defaultLogLevel) {
-                return;
+                // return;
             }
 
             // We need to wait for unity to finish initializing before we can start logging using Debug.Log().
@@ -131,6 +131,7 @@ namespace StellarEngineer {
         /// </summary>
         internal static void EnableFileLog() {
             logStream = new StreamWriter("./stellar.engineer.log");
+            logStream.AutoFlush = true;
             
             logStream.WriteLine(DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff") + ": Logger initialized.");
             logStream.WriteLine("For the full backtrace of every log call, see Unity's log: C:/Users/<YOUR_USER>/AppData/LocalLow/Kalla Gameworks/The Pegasus Expedition/Player.log\n");            
