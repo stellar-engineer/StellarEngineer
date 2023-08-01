@@ -16,7 +16,8 @@ namespace Doorstop {
             StellarLogger.EnableFileLog();
             StellarLogger.Enable();
 
-            StellarLogger.logger.LogInfo("Doorstop loaded succesfully! 1");
+            StellarLogger.logger.LogInfo("Doorstop loaded succesfully!");
+            StellarLogger.logger.LogInfo($"Current time: {DateTime.Now}");
 
             var harmony = new Harmony("stellar.engineer");
             StellarLogger.logger.LogInfo("Harmony Loaded.");

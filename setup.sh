@@ -71,6 +71,17 @@ function build() {
     dotnet build ./src/StellarEngineer.sln -c Debug
 }
 
+function run() {
+    if [ -d "${game_dir}" ]; then
+        echo "Launching game..."
+        "${game_dir}"/The\ Pegasus\ Expedition.exe
+    else
+        echo "Game directory does not exist."
+        echo "To reset it, delete the '.path' file"
+    fi
+}
+
 load_path
 build
 install_doorstop
+run

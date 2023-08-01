@@ -24,6 +24,9 @@ namespace StellarEngineer {
         [JsonProperty("version")]
         public string ModVersion {get; set;} // TODO: make this a struct, so it can be compared, sorted, etc.
 
+        public string ModFolder {get; set;} = "";
+        public string EntrypointFullPath => ModFolder + Entrypoint;
+
         public (bool valid, List<string> errors) IsValid() {
             bool valid = true;
             List<string> errors = new List<string>();
@@ -53,13 +56,18 @@ namespace StellarEngineer {
                 errors.Add($"Mod author is missing or empty. Property: [author]");
             }
 
+            if (String.IsNullOrEmpty(ModFolder)) {
+                valid = false;
+                errors.Add("Mod Folder property for ModMetada was not set. This is an internal StellarEngineer issue, please report this on github.");
+            }
+
             if (String.IsNullOrEmpty(Entrypoint)) {
                 valid = false;
                 errors.Add($"Mod entrypoint is missing or empty. Property: [entrypoint]");
             } else {
-                if (!File.Exists(Entrypoint)) {
+                if (!File.Exists(EntrypointFullPath)) {
                     valid = false;
-                    errors.Add($"Mod entrypoint is not a valid file: {Entrypoint} Property: [entrypoint]");
+                    errors.Add($"Mod entrypoint does not exist: {EntrypointFullPath} Property: [entrypoint]");
                 }
                 if (!Entrypoint.EndsWith(".dll")) {
                     valid = false;

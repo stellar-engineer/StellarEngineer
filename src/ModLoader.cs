@@ -8,19 +8,12 @@ using Newtonsoft.Json;
 namespace StellarEngineer {
     public static class ModLoader {
         internal static void LoadAllMods(string modDirPath) {
-            try {
-                GetModsMetadata(modDirPath);
-                // List<ModMetadata> mods = GetModsMetadata(modDirPath);
-                // // TODO: load them in order.
-                // foreach (var mod in mods ) {
-                //     ModLoader.LoadMod(mod);
-                // }
-            } catch (Exception e) {
-                StellarLogger.logger.LogError(e.Message);
-                StellarLogger.logger.LogError(e.StackTrace);
-                StellarLogger.logger.LogError(e.InnerException);
+            List<ModMetadata> mods = GetModsMetadata(modDirPath);
+            // TODO: load them in order.
+            foreach (var mod in mods ) {
+                ModLoader.LoadMod(mod);
             }
-        } 
+        }
 
         internal static List<ModMetadata> GetModsMetadata(string modDirPath) {
             var result = new List<ModMetadata>(); 
@@ -36,11 +29,8 @@ namespace StellarEngineer {
                 StellarLogger.logger.LogDebug($"Found {filepath}");
                 ModMetadata metadata = null;
                 try {
-                    string value = File.ReadAllText(filepath);
-                    StellarLogger.logger.LogInfo($"{value}");
-                    
-                    metadata = (ModMetadata)JsonConvert.DeserializeObject(value, typeof(ModMetadata));
-                    StellarLogger.logger.LogInfo($"Bruh what");
+                    string raw_json = File.ReadAllText(filepath);
+                    metadata = (ModMetadata)JsonConvert.DeserializeObject(raw_json, typeof(ModMetadata));
                 } catch (Exception e) {
                     StellarLogger.logger.LogError($"Failed to load mod: {filepath}");
                     StellarLogger.logger.LogError(e.Message);
@@ -53,6 +43,8 @@ namespace StellarEngineer {
                     StellarLogger.logger.LogError("Reason: deserialized metadata is null");
                     continue;
                 }
+
+                metadata.ModFolder = dir + "/";
 
                 var (isValid, errors) = metadata.IsValid();
                 if (!isValid) {
@@ -69,8 +61,9 @@ namespace StellarEngineer {
                 StellarLogger.logger.LogDebug($"ID: {metadata.ModID}");
                 StellarLogger.logger.LogDebug($"Author: {metadata.ModAuthor}");
                 StellarLogger.logger.LogDebug($"Entrypoint: {metadata.Entrypoint}");
-                StellarLogger.logger.LogDebug($"Mod Version: {metadata.ModVersion}");
-                StellarLogger.logger.LogDebug($"");
+                StellarLogger.logger.LogDebug($"Mod Version: {metadata.ModVersion}\n");
+
+                result.Add(metadata);
             }
 
             return result;
@@ -80,7 +73,7 @@ namespace StellarEngineer {
             
             Assembly assembly;
             try {
-                assembly = Assembly.LoadFrom(mod.Entrypoint);
+                assembly = Assembly.LoadFrom(mod.EntrypointFullPath);
             } catch (Exception e) {
                 StellarLogger.logger.LogError($"Couldn't load assembly (DLL): {mod.ModID}");
                 StellarLogger.logger.LogError(e.Message);
