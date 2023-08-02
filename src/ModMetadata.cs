@@ -46,11 +46,6 @@ namespace StellarEngineer {
                 errors.Add($"Mod id is missing or empty. Property: [id]");
             }
 
-            if (String.IsNullOrEmpty(ModID)) {
-                valid = false;
-                errors.Add($"Mod id is missing or empty. Property: [id]");
-            }
-
             if (String.IsNullOrEmpty(ModAuthor)) {
                 valid = false;
                 errors.Add($"Mod author is missing or empty. Property: [author]");

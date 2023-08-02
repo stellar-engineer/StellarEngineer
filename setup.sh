@@ -81,7 +81,7 @@ function run() {
     fi
 }
 
-load_path
-build
-install_doorstop
+load_path && \
+build && \
+install_doorstop && \
 run

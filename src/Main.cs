@@ -16,18 +16,22 @@ namespace Doorstop {
             StellarLogger.EnableFileLog();
             StellarLogger.Enable();
 
-            StellarLogger.logger.LogInfo("Doorstop loaded succesfully!");
-            StellarLogger.logger.LogInfo($"Current time: {DateTime.Now}");
+            try {
+                StellarLogger.logger.LogInfo("Doorstop loaded succesfully!");
 
-            var harmony = new Harmony("stellar.engineer");
-            StellarLogger.logger.LogInfo("Harmony Loaded.");
-            
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-            StellarLogger.logger.LogInfo("Finished automatic patching.");
+                var harmony = new Harmony("stellar.engineer");
+                StellarLogger.logger.LogInfo("Harmony Loaded.");
+                
+                harmony.PatchAll(Assembly.GetExecutingAssembly());
+                StellarLogger.logger.LogInfo("Finished automatic patching.");
 
-            StellarLogger.logger.LogInfo("CALL");
-            ModLoader.LoadAllMods("./mods");
-            StellarLogger.logger.LogInfo("Finished loading all mods. Have fun!");
+                ModLoader.LoadAllMods("./mods");
+                StellarLogger.logger.LogInfo("Finished loading all mods. Have fun!");
+            } catch (Exception e) {
+                StellarLogger.logger.LogError("-=-=-=-=-=- FATAL EXCEPTION -=-=-=-=-=-");
+                StellarLogger.logger.LogError(e.Message);
+                StellarLogger.logger.LogError(e.StackTrace);
+            }
         }
     }
 }

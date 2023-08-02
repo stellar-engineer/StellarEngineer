@@ -1,21 +1,25 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 
 namespace StellarEngineer {
     public static class ModLoader {
         internal static void LoadAllMods(string modDirPath) {
-            List<ModMetadata> mods = GetModsMetadata(modDirPath);
-            // TODO: load them in order.
-            foreach (var mod in mods ) {
+            List<ModMetadata> modMetadata = GetAllModMetadata(modDirPath);
+            ModList modList = GetModList(modDirPath, modMetadata);
+            
+            // Because the modlist auto-sorted them when loading, all mods with load in incerasing order of priority (priority 1, then 2, then ...)
+            foreach (var mod in modList.Metadata ) {
                 ModLoader.LoadMod(mod);
             }
         }
 
-        internal static List<ModMetadata> GetModsMetadata(string modDirPath) {
+        internal static List<ModMetadata> GetAllModMetadata(string modDirPath) {
             var result = new List<ModMetadata>(); 
 
             StellarLogger.logger.LogInfo($"Searching for subdirectories in {modDirPath}");
@@ -23,6 +27,7 @@ namespace StellarEngineer {
                 StellarLogger.logger.LogDebug($"Searching for a mod.json in {dir}");
                 var filepath = dir + "/mod.json";
                 if (!File.Exists(filepath)) {
+                    StellarLogger.logger.LogWarning($"Found a directory ({dir}) with no mod.json file. Is it on purpose?");
                     continue;
                 }
                 
@@ -56,19 +61,33 @@ namespace StellarEngineer {
                 }
 
                 StellarLogger.logger.LogDebug($"Found mod: {metadata.ModName}");
-                StellarLogger.logger.LogDebug($"Schema Version: {metadata.SchemaVersion}");
-                StellarLogger.logger.LogDebug($"Name: {metadata.ModName}");
-                StellarLogger.logger.LogDebug($"ID: {metadata.ModID}");
-                StellarLogger.logger.LogDebug($"Author: {metadata.ModAuthor}");
-                StellarLogger.logger.LogDebug($"Entrypoint: {metadata.Entrypoint}");
-                StellarLogger.logger.LogDebug($"Mod Version: {metadata.ModVersion}\n");
+                StellarLogger.logger.LogDebug(JsonConvert.SerializeObject(metadata, Formatting.Indented));
 
                 result.Add(metadata);
             }
 
             return result;
         }
-        public static void LoadMod(ModMetadata mod) {
+        
+        internal static ModList GetModList(string modDirPath, List<ModMetadata> mods) {
+            var modlistPath = modDirPath + "/modlist.json";
+            StellarLogger.logger.LogDebug($"Looking for modlist in {modlistPath}");
+
+            if (!File.Exists(modlistPath)) {
+                StellarLogger.logger.LogInfo($"Creating new modlist at {modlistPath}");
+                ModList.CreateNew(modlistPath, mods);
+            }
+
+            var modList = ModList.Load(modlistPath, mods);
+            
+            StellarLogger.logger.LogInfo($"Loaded {modList.Entries.Count} mod entries, of which {modList.Entries.Where(e => e.Enabled).Count()} are enabled.");
+            foreach (var entry in modList.Entries) {
+                StellarLogger.logger.LogDebug(JsonConvert.SerializeObject(entry, Formatting.Indented));
+            }
+
+            return modList;
+        }
+        internal static void LoadMod(ModMetadata mod) {
             StellarLogger.logger.LogInfo($"Loading Mod: {mod.ModID}");
             
             Assembly assembly;
@@ -106,7 +125,7 @@ namespace StellarEngineer {
                     var attribute = method.GetCustomAttribute<EntrypointAttribute>();
 
                     if (attribute != null) {
-                        StellarLogger.logger.LogInfo($"Mod started loading: {mod.ModID}");
+                        StellarLogger.logger.LogDebug($"Invoking mod entrypoint: {mod.ModID}");
                         try {
                             method.Invoke(null,null);
                         } catch (Exception e) {
@@ -115,7 +134,7 @@ namespace StellarEngineer {
                             StellarLogger.logger.LogError(e.StackTrace);
                             return;
                         }
-                        StellarLogger.logger.LogInfo($"Mod finished loading: {mod.ModID}");
+                        StellarLogger.logger.LogDebug($"Mod entrypoint function done: {mod.ModID}");
                         return;
                     }
                 }
