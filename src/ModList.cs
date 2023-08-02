@@ -99,7 +99,7 @@ namespace StellarEngineer {
             return new ModListEntry {
                 Id = modMetadata.ModID,
                 Priority = 100,
-                Enabled = false
+                Enabled = true
             };
         } 
     }
