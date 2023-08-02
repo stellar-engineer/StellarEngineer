@@ -14,7 +14,7 @@ namespace StellarEngineer {
             ModList modList = GetModList(modDirPath, modMetadata);
             
             // Because the modlist auto-sorted them when loading, all mods with load in incerasing order of priority (priority 1, then 2, then ...)
-            foreach (var mod in modList.Metadata ) {
+            foreach (var mod in modList.Metadata.Where(m => modList.GetEntry(m).Enabled)) {
                 ModLoader.LoadMod(mod);
             }
         }
