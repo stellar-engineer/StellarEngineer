@@ -133,7 +133,7 @@ namespace StellarEngineer {
             logStream = new StreamWriter("./stellar.engineer.log");
             logStream.AutoFlush = true;
             
-            logStream.WriteLine(DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff") + ": Logger initialized.");
+            logStream.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": Logger initialized.");
             logStream.WriteLine("For the full backtrace of every log call, see Unity's log: C:/Users/<YOUR_USER>/AppData/LocalLow/Kalla Gameworks/The Pegasus Expedition/Player.log\n");            
             logStream.Flush();
         }

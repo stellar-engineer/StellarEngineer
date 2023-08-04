@@ -85,6 +85,8 @@ namespace StellarEngineer {
                 StellarLogger.logger.LogDebug(JsonConvert.SerializeObject(entry, Formatting.Indented));
             }
 
+            modList.Save(modlistPath);
+
             return modList;
         }
         internal static void LoadMod(ModMetadata mod) {

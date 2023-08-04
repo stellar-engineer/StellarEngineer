@@ -18,11 +18,8 @@ namespace Doorstop {
 
             try {
                 StellarLogger.logger.LogInfo("Doorstop loaded succesfully!");
-
-                var harmony = new Harmony("stellar.engineer");
-                StellarLogger.logger.LogInfo("Harmony Loaded.");
                 
-                harmony.PatchAll(Assembly.GetExecutingAssembly());
+                SceneManager.sceneLoaded += Patch; 
                 StellarLogger.logger.LogInfo("Finished automatic patching.");
 
                 ModLoader.LoadAllMods("./mods");
@@ -32,6 +29,19 @@ namespace Doorstop {
                 StellarLogger.logger.LogError(e.Message);
                 StellarLogger.logger.LogError(e.StackTrace);
             }
+        }
+    
+        private static bool patched = false;
+        private static void Patch(Scene _a, LoadSceneMode _b) {
+            if (patched) {
+                return;
+            }
+            patched = true;
+            SceneManager.sceneLoaded -= Patch;
+
+            var harmony = new Harmony("stellar.engineer");
+            StellarLogger.logger.LogInfo("Harmony Loaded.");
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
     }
 }
